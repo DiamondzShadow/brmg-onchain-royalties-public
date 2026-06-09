@@ -1,0 +1,8 @@
+# Runtime deps. In practice this runs inside the story-mcp-hub .venv, which already
+# provides story_protocol_python_sdk and the StoryService. Listed here for reference.
+web3>=6.0
+eth-account>=0.10
+python-dotenv>=1.0
+requests>=2.31
+boto3>=1.36          # Storj S3 uploads (--backend storj)
+story-protocol-python-sdk

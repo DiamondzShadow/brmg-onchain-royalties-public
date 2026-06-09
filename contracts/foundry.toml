@@ -1,0 +1,29 @@
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.24"
+# Shanghai (not the 0.8.24 default "cancun") is the lowest common denominator
+# across all three target chains — Story 1514 is the cautious one (forge raised
+# the EIP-3855/PUSH0 notice for it). Shanghai includes PUSH0 and is fully
+# supported on Polygon 137 + Arbitrum 42161 too, so one setting covers every
+# venue and avoids emitting cancun-only opcodes (MCOPY / transient storage) that
+# an older Story node might reject.
+evm_version = "shanghai"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+# Local lib/ remappings (relative) so forge keys source-units relative and
+# Polygonscan verification matches bytecode exactly (see Phase 0 verify-gotcha:
+# absolute paths break source-unit keys). lib/ is git-ignored and populated by
+# symlink to the sibling echo-creator-nest OZ v5 + forge-std checkout — see
+# README "Build" to recreate it (or `forge install`) when building standalone.
+remappings = [
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "forge-std/=lib/forge-std/src/",
+]
+
+[fmt]
+line_length = 110

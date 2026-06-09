@@ -1,0 +1,19 @@
+# secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# local state (uncomment to keep ledgers out of git)
+# royalty-ledger.json
+# catalog-ledger.json
+
+# os
+.DS_Store

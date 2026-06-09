@@ -1,0 +1,23 @@
+[
+  {
+    "key": "brmg-r-0001",
+    "title": "Billionaires Row — Genesis (Royalty Split)",
+    "artist": "Billionaires Row Music Group",
+    "description": "Phase-1 pilot: IP registered with on-chain royalty-token splits to artist, collaborator, and fan pool.",
+    "genre": "Hip-Hop",
+    "media_type": "audio/mpeg",
+    "image": "art/brmg-genesis.jpg",
+    "image_uri": "ipfs://PENDING-host-via-ipfs-or-storj",
+    "pil": {
+      "commercial_use": true,
+      "commercial_rev_share": 10,
+      "derivatives_allowed": true,
+      "minting_fee": 0
+    },
+    "splits": [
+      {"recipient": "0x3D56B28516282143B347BE5A1de4301d5A91fc9d", "role": "artist",    "percentage": 70},
+      {"recipient": "0xC5D133296E17BA25DF0409a6C31607bf3B78e3e3", "role": "producer",  "percentage": 10},
+      {"recipient": "0xdF46A5083C01C82b2e70fF97E9cf27fC80000851", "role": "fan_pool",  "percentage": 20}
+    ]
+  }
+]

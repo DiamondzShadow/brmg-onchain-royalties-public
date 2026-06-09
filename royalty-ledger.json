@@ -1,0 +1,41 @@
+{
+  "brmg-r-0001": {
+    "title": "Billionaires Row \u2014 Genesis (Royalty Split)",
+    "artist": "Billionaires Row Music Group",
+    "ip_id": "0xb2779bf818f9C5e8A35c9ee6b2a5FC2B45401D2b",
+    "token_id": 4,
+    "license_terms_ids": [
+      28725,
+      7758
+    ],
+    "tx_hash": "d52deed17dd853f26f201bf0061cec6851ba17d9abc0793d90aea4eaf7f18d8f",
+    "royalty_vault": "0x5361cB2A1FE33a22358b577c38916b6D3323469B",
+    "splits": [
+      {
+        "recipient": "0x3D56B28516282143B347BE5A1de4301d5A91fc9d",
+        "role": "artist",
+        "percentage": 70
+      },
+      {
+        "recipient": "0xC5D133296E17BA25DF0409a6C31607bf3B78e3e3",
+        "role": "producer",
+        "percentage": 10
+      },
+      {
+        "recipient": "0xdF46A5083C01C82b2e70fF97E9cf27fC80000851",
+        "role": "fan_pool",
+        "percentage": 20
+      }
+    ],
+    "backend": "storj",
+    "image_uri": "https://link.storjshare.io/raw/juf2xxvum3kjehbjpvkrwi4c4mja/crabby/brmg/brmg-r-0001/cover.jpg",
+    "ip_metadata_uri": "https://link.storjshare.io/raw/juf2xxvum3kjehbjpvkrwi4c4mja/crabby/brmg/brmg-r-0001/ip.json",
+    "pil": {
+      "commercial_use": true,
+      "commercial_rev_share": 10,
+      "derivatives_allowed": true,
+      "minting_fee": 0
+    },
+    "registered_at": 1781013834
+  }
+}
