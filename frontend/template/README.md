@@ -36,6 +36,30 @@ src/pages/Feeder.tsx             reference screen: read + write + gate + poll
 - Keeper-only functions (`mintMirror` / `fundFanPool` / `releaseShares` / `releaseEscrow`)
   are **never** called from the client — the UI signs the user-side tx and polls.
 
+### Wallet & gasless — the EOA-first structure (learned the hard way)
+Configure gasless **on the `inAppWallet`** via `executionMode`, NOT the `accountAbstraction`
+prop on `<ConnectButton>` — see `ConnectBar.tsx`:
+```ts
+inAppWallet({
+  auth: { options: ["email", "google", "passkey"] },
+  executionMode: { mode: "EIP7702", sponsorGas: true },   // same EOA address, gasless
+})
+```
+- The `accountAbstraction` ConnectButton prop is **EIP-4337**: it wraps *every* connected
+  wallet (MetaMask included) into a smart-contract account with a **different address** and
+  needs heavier setup — using it on a clientId without AA configured **throws and breaks the
+  connect button**. Don't reach for it for an EOA-first app.
+- `executionMode: EIP7702` keeps the **same EOA address** (so a test wallet stays a stable,
+  fundable address) and sponsors gas on chains that support 7702. If a chain isn't 7702-enabled
+  for your client, use `{ mode: "EIP4337", smartAccount: { chain, sponsorGas: true } }`.
+- **Cost:** thirdweb includes **1,000 sponsored txns free**, +2.5% mainnet surcharge beyond that;
+  Polygon gas is sub-cent — so gasless is effectively free for testing and early usage.
+- The EIP-7702 in-app wallet **supports `sendBatchTransaction`** (one-tap approve+pledge). A
+  plain external wallet (MetaMask, no 7702) can't batch → fall back to sequential approve → pledge.
+- thirdweb wallet UI is **client-only**: in TanStack Start / any SSR setup, gate the
+  `<ConnectButton>` behind a mounted check (as `ConnectBar.tsx` does) or it trips the error boundary.
+- Refs: [in-app wallet](https://portal.thirdweb.com/typescript/v5/inAppWallet) · [EIP-7702 smart accounts](https://blog.thirdweb.com/changelog/next-gen-smart-accounts/) · [pricing](https://thirdweb.com/pricing)
+
 ## Master prompt
 ```
 Build a Web3 dApp for "BRMG — Billionaires Row Music Group", an on-chain music
