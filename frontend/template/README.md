@@ -69,3 +69,89 @@ Screens (use the provided hooks/components as the pattern for all of them):
 Design: dark, premium music-label aesthetic, mobile-first. Empty states render the
 brand shell (hero + rails), never a blank screen. Use TanStack Query (thirdweb ships it).
 ```
+
+## Per-screen prompts
+
+Lovable builds best in passes. After the master prompt scaffolds the app, paste these
+**one at a time**. Feeder already has a reference file (`src/pages/Feeder.tsx`); build
+Advances last — it's the only flow touching both chains.
+
+### Catalog
+```
+Build the Catalog screen. Import useWorks + useBrmg from @/hooks/useBrmg and
+WORKS/RT_TOTAL_SUPPLY/explorer from @/config/brmg.
+
+For each work in useWorks() render a card:
+ • title, and the splits array as labelled rows (artist 70% / producer 10% / fan_pool 20%).
+ • Royalty Token: useReadContract(royaltyToken(work.royaltyToken), "symbol"/"totalSupply").
+ • The connected wallet's RT balance: royaltyToken(rt) "balanceOf" [account] (6 decimals).
+ • A "View IP on Story" link → explorer.storyIp(work.ipAsset).
+
+Revenue: claiming pro-rata revenue needs the Story SDK (@story-protocol/core-sdk
+claimAllRevenue) which is out of scope for thirdweb — for now show the holder's RT
+balance + the Story Explorer link, with a "Claim revenue" button that's disabled with
+a tooltip "claim via Story". Viewing is open (no compliance gate); only acquiring RT is gated.
+
+Dark card grid, mobile-first, render the brand shell even with one work.
+```
+
+### Membership
+```
+Build the Membership screen ($BRMG utility — NO compliance gate, this is open).
+Import useBrmg + MEMBERSHIP_TIERS, BRMG_TOKENOMICS from @/config/brmg.
+
+Reads (Polygon), all via useReadContract on useBrmg() contracts:
+ • membership "tierOf" [account] → uint8; label = MEMBERSHIP_TIERS[tier].
+ • membership "effectiveBalance" [account] → held+locked $BRMG that counts toward tier.
+ • membership "thresholds" [i] for i = 1..4 (Bronze/Silver/Gold/Platinum cutoffs).
+ • brmgToken "balanceOf" [account] and "decimals" (18).
+
+Show: a tier badge (None→Platinum), the effective balance, and a progress bar to the
+NEXT threshold (effectiveBalance vs thresholds[tier+1]). Add a small "tokenomics" footer
+from BRMG_TOKENOMICS (1B cap, 200M genesis, treasury Safe). Premium dark UI.
+```
+
+### Advances (cross-chain flagship — build last)
+```
+Build the Advances screen. Artist-only: lock Royalty Tokens on Story → keeper mirrors an
+NFT on Polygon → borrow USDC against it @15% LTV. Import useBrmg, mirrorTokenId,
+ADVANCE_LTV_BPS, RT_DECIMALS from @/config/brmg. This spans BOTH chains and is keeper-async.
+
+STEP 1 — lock (Story): pick a work; royaltyToken(rt) "approve" [royaltyEscrow.address, amount]
+then royaltyEscrow "lockForAdvance" [rt, amount, ipAsset]. Capture escrowRef from the Locked
+event (or read royaltyEscrow positions). Then show "Bridging — keeper is minting your
+mirror…" and POLL advanceWrapper "ownerOf" [mirrorTokenId(escrowRef)] on Polygon until it
+returns the artist (use refetchInterval, like useKeeperPoll). Never call mintMirror yourself.
+
+STEP 2 — borrow (Polygon, once minted): read advanceWrapper "estimatePositionValue"
+[tokenId] → total (USDC, 6dec) and diggerRegistry "isCollateral" [advanceWrapper.address].
+maxBorrow = total * ADVANCE_LTV_BPS / 10000. advanceWrapper "approve" [lendingPool.address,
+tokenId], then lendingPool "borrow" [advanceWrapper.address, tokenId, borrowAmount].
+Handle a revert gracefully (the pilot pool may have no USDC liquidity → show "pool liquidity
+unavailable").
+
+STEP 3 — manage: lendingPool "activeLoanOf"/"debtOf"/"loanHealthBps". Repay: usdc "approve"
+[lendingPool.address, amt] + lendingPool "repay" [loanId, amt]. Redeem RT: advanceWrapper
+"burnAndRedeem" [tokenId] → then POLL royaltyEscrow "positions" [escrowRef] until status==2
+(Released) on Story. Render the three steps as a clear stepper with per-step live state.
+```
+
+### Market
+```
+Build the secondary Market screen for fan-pool shares (RoyaltyShareMarket). These ARE
+securities — wrap every buy/sell in <ComplianceGate>. Import useBrmg from @/hooks/useBrmg.
+
+Browse: read shareMarket "nextOrderId", then shareMarket "orders" [i] for i = 1..nextOrderId-1;
+show rows where active==true: (shareToken, shareAmount, askAmount in USDC, maker). Amounts
+are 6 decimals.
+
+Buy (fill) — gated: payAmount = askAmount * fillShares / shareAmount (pro-rata). usdc "approve"
+[shareMarket.address, payAmount], then shareMarket "fill" [orderId, fillShares].
+
+Sell (list) — gated: the maker holds mirror shares for a work (resolve the mirror via
+mirrorShareFactory "mirrorOf" [rtToken]). mirrorShare(shareToken) "approve" [shareMarket.address,
+shareAmount], then shareMarket "list" [shareToken, usdc.address, shareAmount, askAmount].
+
+Cancel: shareMarket "cancel" [orderId] (maker only). Note a protocol fee (≤2.5%) goes to
+treasury on fills. Dark order-book style table, mobile-first.
+```
